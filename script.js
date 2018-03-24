@@ -41,17 +41,22 @@ var alienBulletY;
  */
 function setup(){
   canvas = createCanvas(500,400);
-  background(20, 30, 40);
+  background(244, 65, 241);
   gameScreen = select("#game-screen");
   canvas.parent(gameScreen);
-  shipColor = "#00ff00";
+  shipColor = "#41f4f4";
   shipDiameter = 80;
   shipX = width / 2;
   shipY = height - (shipDiameter / 2);
 shipSpeed = 6;
 bulletDiameter = 30;
 shipShooting = false;
-
+alienDiameter = 40;
+alienX = alienDiameter / 2;
+alienY = alienDiameter / 2;
+alienVelocity = 10;
+alienBulletDiameter = 15;
+alienShooting = false;
 }
 
 /*
@@ -75,9 +80,13 @@ shipShooting = false;
  * if the game is running.
  */
 function draw() {
-  background(20, 30, 40);
+ background(20, 30, 40);
   drawShip();
+  drawAlien();
   drawBullet();
+  if(alienShooting) {
+    drawAlienBullet();
+  }
 
 }
 
@@ -125,7 +134,7 @@ function keyPressed() {
  */
 function drawBullet(){
 if (bulletY > 0) {
-fill("#ffff00");
+fill("#42e5f4");
   ellipse(bulletX, bulletY, bulletDiameter, bulletDiameter);
 bulletY -= 10;
 }
@@ -138,13 +147,42 @@ else {
  * This function draws an alien. It also checks to see if the alien has touched
  * the player's ship. If it has, the function calls gameOver().
  */
+function drawAlien(){
+alienX += alienVelocity;
+if(alienX >= width - (alienDiameter / 2) || alienX <= alienDiameter / 2) {
+  alienVelocity *=-1;
+}
+  fill ("#dc42f4");
+ellipse(alienX, alienY, alienDiameter, alienDiameter);
+if (random(4)< 1 && !alienShooting) {
+  alienBulletY = alienY;
+  alienBulletX = alienX;
+  alienShooting = true;
 
-
+ }
+}
 /*
  * drawAlienBullet()
  * This function behaves much like drawBullet(), only it fires from the alien
  * and not the player's ship. If the bullet hits the player, it's game over.
  */
+function drawAlienBullet() {
+var hitAlien = checkCollision(alienX, alienY, alienDiameter, bulletX, bulletY, bulletDiameter);
+ if(alienBulletY > 0 && !hitAlien) {
+   fill("#f4f141");
+   noStroke();
+   ellipse(alienBulletX, alienBulletY, alienBulletDiameter, alienBulletDiameter);
+   alienBulletY +=10;
+ }
+else if(hitAlien){
+resetAlien()
+alienVelocity ++;
+  alienShooting = false;
+ }
+else {
+  shipshooting = false
+}
+}
 
 
 /*
@@ -154,7 +192,11 @@ else {
  * velocity was negative when it died, it becomes positive upon reset, making
  * it always start by moving to the right).
  */
-
+function resetAlien() {
+  alienX = alienDiameter / 2;
+  alienY = alienDiameter / 2;
+  alienVelocity = abs(alienVelocity);
+}
 
 /*
  * checkCollision(aX, aY, aD, bX, bY, bD)
@@ -164,3 +206,14 @@ else {
  * Circles are considered touching if
  * (distance <= (circle1Diameter + circle2Diameter) / 2)
  */
+
+
+function checkCollision(aX, aY, aD, bX, bY, bD) {
+  distance = dist(aX, aY, bX, bY);
+  if(distance <= (aD, + bD / 2)) {
+    return true;
+  }
+  else{
+    return false;
+  }
+}
